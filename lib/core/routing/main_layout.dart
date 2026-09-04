@@ -1,16 +1,114 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import '../theme/app_colors.dart';
+import '../../features/downloader/link_provider.dart';
 
-class MainLayout extends StatelessWidget {
+class MainLayout extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainLayout({super.key, required this.navigationShell});
 
+  @override
+  ConsumerState<MainLayout> createState() => _MainLayoutState();
+}
+
+class _MainLayoutState extends ConsumerState<MainLayout> with WidgetsBindingObserver {
+  late StreamSubscription _intentDataStreamSubscription;
+  String? _lastCheckedClipboard;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initShareIntentListeners();
+    _checkClipboard();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _intentDataStreamSubscription.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Uygulama arka plandan öne geldiğinde panoyu kontrol et
+    if (state == AppLifecycleState.resumed) {
+      _checkClipboard();
+    }
+  }
+
+  // Dışarıdan "Clipza ile Paylaş" denildiğinde çalışır
+  void _initShareIntentListeners() {
+    _intentDataStreamSubscription = ReceiveSharingIntent.instance.getMediaStream().listen((List<SharedMediaFile> value) {
+      if (value.isNotEmpty && value.first.path.isNotEmpty) {
+        _handleDetectedLink(value.first.path);
+      }
+    });
+
+    ReceiveSharingIntent.instance.getInitialMedia().then((List<SharedMediaFile> value) {
+      if (value.isNotEmpty && value.first.path.isNotEmpty) {
+        _handleDetectedLink(value.first.path);
+      }
+    });
+  }
+
+  // Pano (Clipboard) kontrolü
+  Future<void> _checkClipboard() async {
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = clipboardData?.text;
+
+    if (text != null && text != _lastCheckedClipboard) {
+      _lastCheckedClipboard = text;
+      if (text.contains('instagram.com') || text.contains('twitter.com') || text.contains('x.com')) {
+        _handleDetectedLink(text);
+      }
+    }
+  }
+
+  void _handleDetectedLink(String link) {
+    // Linki modern Notifier ile state'e kaydet
+    ref.read(linkProvider.notifier).setLink(link);
+
+    if (widget.navigationShell.currentIndex != 0) {
+      widget.navigationShell.goBranch(0);
+    }
+
+    HapticFeedback.heavyImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: AppColors.cardColor,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.primary, width: 1),
+        ),
+        content: const Row(
+          children: [
+            Icon(Icons.auto_awesome, color: AppColors.primary),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Link yakalandı, indirmeye hazır!',
+                style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _onTap(int index) {
-    navigationShell.goBranch(
+    widget.navigationShell.goBranch(
       index,
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
 
@@ -18,7 +116,7 @@ class MainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: navigationShell,
+      body: widget.navigationShell,
       extendBody: true,
       bottomNavigationBar: SafeArea(
         child: Container(
@@ -50,7 +148,7 @@ class MainLayout extends StatelessWidget {
   }
 
   Widget _buildNavItem(int index, IconData icon) {
-    final isSelected = navigationShell.currentIndex == index;
+    final isSelected = widget.navigationShell.currentIndex == index;
     return GestureDetector(
       onTap: () => _onTap(index),
       behavior: HitTestBehavior.opaque,
@@ -75,7 +173,6 @@ class MainLayout extends StatelessWidget {
   }
 }
 
-// Geçici ekran şablonunu da yeni renklere uyarladık
 class PremiumPlaceholderScreen extends StatelessWidget {
   final String title;
   final IconData icon;
