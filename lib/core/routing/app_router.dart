@@ -1,12 +1,63 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../main.dart'; // DummyHomeScreen için geçici import
+import 'main_layout.dart';
+
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 final appRouter = GoRouter(
-  initialLocation: '/',
+  navigatorKey: _rootNavigatorKey,
+  initialLocation: '/downloader',
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const DummyHomeScreen(),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return MainLayout(navigationShell: navigationShell);
+      },
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/downloader',
+              builder: (context, state) => const PremiumPlaceholderScreen(
+                title: 'Clipza İndirici',
+                icon: Icons.download_rounded,
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/sticker',
+              builder: (context, state) => const PremiumPlaceholderScreen(
+                title: 'Sticker Maker',
+                icon: Icons.auto_awesome_rounded,
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/gallery',
+              builder: (context, state) => const PremiumPlaceholderScreen(
+                title: 'Galeri',
+                icon: Icons.photo_library_rounded,
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/settings',
+              builder: (context, state) => const PremiumPlaceholderScreen(
+                title: 'Ayarlar',
+                icon: Icons.settings_rounded,
+              ),
+            ),
+          ],
+        ),
+      ],
     ),
   ],
 );

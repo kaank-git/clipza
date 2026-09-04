@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Görselden alınan referans renkler
-  static const Color background = Color(0xFF0D0F1C); // En arka plan (Koyu Lacivert/Siyah)
-  static const Color cardColor = Color(0xFF1C1E32);  // Kartların ve menülerin arka planı
-  static const Color primary = Color(0xFF9747FF);    // Tasarımdaki Canlı Mor (Butonlar ve vurgular)
-  static const Color primaryLight = Color(0xFFB57AFF); // Açık Mor (Hover veya alt tonlar için)
+  static const Color background = Color(0xFF141416); // Görseldeki derin mat siyah
+  static const Color cardColor = Color(0xFF1F222A);  // Kartlar için bir ton açık siyah
+  static const Color primary = Color(0xFF00E5FF);    // Neon Turkuaz (Cyan) - Vurgular için
+  static const Color secondary = Color(0xFFA259FF);  // Parlak Mor - İkincil vurgular için
 
   static const Color textWhite = Colors.white;
-  static const Color textGrey = Color(0xFFA0A0AB);   // Pasif veya açıklama metinleri için
+  static const Color textGrey = Color(0xFF7E8494);   // Pasif ikonlar için koyu gri
 }
