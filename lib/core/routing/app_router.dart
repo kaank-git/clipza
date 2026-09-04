@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'main_layout.dart';
 import '../../features/downloader/screens/downloader_screen.dart';
+import '../../features/gallery/screens/gallery_screen.dart';
+import '../../features/gallery/screens/video_player_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -9,6 +12,18 @@ final appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/downloader',
   routes: [
+    // TAM EKRAN VİDEO OYNATICI ROTASI
+    // Alt menünün (Bottom Nav Bar) üzerine açılması için root navigatörü kullanıyoruz
+    GoRoute(
+      path: '/video_player',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final videoFile = state.extra as File;
+        return VideoPlayerScreen(videoFile: videoFile);
+      },
+    ),
+
+    // ALT MENÜ (SEKMELİ YAPI) ROTALARI
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return MainLayout(navigationShell: navigationShell);
@@ -37,10 +52,7 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/gallery',
-              builder: (context, state) => const PremiumPlaceholderScreen(
-                title: 'Galeri',
-                icon: Icons.photo_library_rounded,
-              ),
+              builder: (context, state) => const GalleryScreen(),
             ),
           ],
         ),
