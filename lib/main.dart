@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_colors.dart';
+import 'core/routing/app_router.dart';
 
 void main() {
-  runApp(const ClipzaApp());
+  // Tüm uygulamayı ProviderScope ile sarıyoruz
+  runApp(const ProviderScope(child: ClipzaApp()));
 }
 
 class ClipzaApp extends StatelessWidget {
@@ -10,9 +13,11 @@ class ClipzaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // MaterialApp.router kullanarak GoRouter'ı devreye sokuyoruz
+    return MaterialApp.router(
       title: 'Clipza',
-      debugShowCheckedModeBanner: false, // Sağ üstteki debug yazısını kaldırır
+      debugShowCheckedModeBanner: false,
+      routerConfig: appRouter,
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.background,
         colorScheme: const ColorScheme.dark(
@@ -20,7 +25,6 @@ class ClipzaApp extends StatelessWidget {
           surface: AppColors.cardColor,
         ),
         useMaterial3: true,
-        // Proje genelindeki yazı tipleri ve appbar ayarları
         appBarTheme: const AppBarTheme(
           backgroundColor: AppColors.background,
           elevation: 0,
@@ -33,12 +37,11 @@ class ClipzaApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const DummyHomeScreen(),
     );
   }
 }
 
-// Tasarımın rengini test etmek için geçici bir ekran
+// Geçici ekranımız
 class DummyHomeScreen extends StatelessWidget {
   const DummyHomeScreen({super.key});
 
@@ -59,20 +62,15 @@ class DummyHomeScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.auto_awesome, color: AppColors.primary, size: 48),
+              const Icon(Icons.route, color: AppColors.primary, size: 48),
               const SizedBox(height: 16),
               const Text(
-                'Clipza Hazır!',
+                'Riverpod & Router Aktif!',
                 style: TextStyle(
                   color: AppColors.textWhite,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Premium UI altyapısı kuruldu.',
-                style: TextStyle(color: AppColors.textGrey),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
@@ -85,7 +83,7 @@ class DummyHomeScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 ),
                 onPressed: () {},
-                child: const Text('Başlayalım', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: const Text('Devam Et', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               )
             ],
           ),
