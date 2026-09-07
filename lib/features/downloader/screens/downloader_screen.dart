@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../link_provider.dart';
 import '../providers/download_provider.dart';
+import '../../gallery/providers/gallery_provider.dart';
 
 class DownloaderScreen extends ConsumerStatefulWidget {
   const DownloaderScreen({super.key});
@@ -167,11 +168,9 @@ class _DownloaderScreenState extends ConsumerState<DownloaderScreen> {
                 ref.read(downloadStateProvider.notifier).setLoading(true);
                 ref.read(downloadProgressProvider.notifier).setProgress(0.0);
 
-                // Şimdilik test linki, kendi API'mizi yazdığımızda burası değişecek
-                const testVideoUrl = "https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4";
-
+                // Test linkini kaldırdık, kullanıcının yapıştırdığı gerçek linki kendi API'mize yolluyoruz
                 final success = await ref.read(downloadServiceProvider).downloadAndSaveVideo(
-                  testVideoUrl,
+                  currentLink, // Burada artık currentLink kullanılıyor
                       (received, total) {
                     if (total != -1) {
                       ref.read(downloadProgressProvider.notifier).setProgress(received / total);
@@ -181,6 +180,10 @@ class _DownloaderScreenState extends ConsumerState<DownloaderScreen> {
 
                 ref.read(downloadStateProvider.notifier).setLoading(false);
                 ref.read(downloadProgressProvider.notifier).setProgress(0.0);
+
+                if (success) {
+                  ref.read(galleryProvider.notifier).fetchVideos();
+                }
 
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(

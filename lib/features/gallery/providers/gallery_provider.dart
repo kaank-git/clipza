@@ -9,17 +9,25 @@ class GalleryNotifier extends Notifier<List<AssetEntity>> {
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
 
     if (ps.isAuth || ps.hasAccess) {
+      // İşletim sisteminin dosyayı galeriye işlemesi için çok kısa bir süre tanıyoruz
+      await Future.delayed(const Duration(milliseconds: 500));
+      PhotoManager.clearFileCache();
+
       final paths = await PhotoManager.getAssetPathList(type: RequestType.video);
+
       if (paths.isNotEmpty) {
-        // Cihazdaki en son videoları geniş bir havuzda çek
+        // paths.first cihazdaki "Tüm Videolar" (Recent) havuzunu temsil eder
         final allVideos = await paths.first.getAssetListPaged(page: 0, size: 500);
 
-        // Sadece indirme servisimizin adlandırdığı (clipza_) dosyaları filtrele
+        // Sadece indirdiğimiz (adı clipza_ ile başlayan) dosyaları filtrele
         final clipzaVideos = allVideos.where((asset) {
-          return asset.title != null && asset.title!.startsWith('clipza_');
+          final title = asset.title ?? '';
+          return title.contains('clipza_');
         }).toList();
 
         state = clipzaVideos;
+      } else {
+        state = [];
       }
     } else {
       PhotoManager.openSetting();
